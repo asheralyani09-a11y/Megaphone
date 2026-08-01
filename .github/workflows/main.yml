@@ -5,25 +5,20 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Build App Payload
-      run: |
-        xcodebuild -project Megaphone.xcodeproj -target Megaphone -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO clean build
-        
-    - name: Package to IPA
-      run: |
-        mkdir -p build/Payload
-        cp -r build/Release-iphoneos/*.app build/Payload/ || cp -r build/UninstalledProducts/iphoneos/*.app build/Payload/ || find . -name "*.app" -exec cp -r {} build/Payload/ \;
-        cd build
-        zip -r Megaphone.ipa Payload
+    - name: Build IPA with Xcode-Builder Action
+      uses: iOS-project-builder/action-ios-project-builder@v1
+      with:
+        project-path: Megaphone.xcodeproj
+        scheme: Megaphone
 
     - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Megaphone-IPA
-        path: build/Megaphone.ipa
+        path: "*.ipa"
