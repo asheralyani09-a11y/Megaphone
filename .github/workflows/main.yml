@@ -5,24 +5,25 @@ on:
 
 jobs:
   build:
-    runs-on: macos-12
+    runs-on: macos-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Build App
+    - name: Build App for Simulator
       run: |
-        xcodebuild -sdk iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        xcodebuild -project Megaphone.xcodeproj -scheme Megaphone -sdk iphonesimulator -configuration Release CODE_SIGNING_ALLOWED=NO build
 
-    - name: Create IPA
+    - name: Create IPA Package
       run: |
-        mkdir -p Payload
-        find . -name "*.app" -exec cp -r {} Payload/ \;
+        mkdir -p build/Payload
+        find build -name "*.app" -exec cp -r {} build/Payload/ \; || find . -name "*.app" -exec cp -r {} build/Payload/ \;
+        cd build
         zip -r Megaphone.ipa Payload
 
     - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Megaphone-IPA
-        path: Megaphone.ipa
+        path: build/Megaphone.ipa
